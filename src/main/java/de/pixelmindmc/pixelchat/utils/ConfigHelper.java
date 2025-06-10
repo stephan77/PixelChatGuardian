@@ -116,13 +116,19 @@ public class ConfigHelper {
         // Get the value from the current language config
         String message = fileConfiguration.getString(path);
 
-        // If the message is null or empty, replace it with the default value
+        // If the message is null or empty, load the default value from the plugin resources
         if (message == null || message.trim().isEmpty()) {
-            // Load the default config from the plugin's jar
-            FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), path));
+            try (InputStream resource = plugin.getResource(this.path)) {
+                if (resource != null) {
+                    FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
+                            new InputStreamReader(resource, StandardCharsets.UTF_8));
+                    message = defaultConfig.getString(path);
+                }
+            }
 
-            // Return the default message
-            return defaultConfig.getString(path, "Message not found: " + path);
+            if (message == null || message.trim().isEmpty()) {
+                return "Message not found: " + path;
+            }
         }
 
         return message;
