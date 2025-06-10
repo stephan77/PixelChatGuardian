@@ -64,17 +64,26 @@ public class StrikeCommand implements CommandExecutor {
         }
 
         Player onlinePlayer = Bukkit.getPlayer(args[0]);
-        UUID playerUUID;
         if (onlinePlayer != null) {
-            playerUUID = onlinePlayer.getUniqueId();
-        } else playerUUID = plugin.getPixelChatCommand().getOfflinePlayerUUID(args[0]);
-
-        ChatGuardHelper.runStrikeSystem(plugin, playerUUID, args[0], args[1]);
-
-        // Send a message after successfully struck a player
-        sender.sendMessage(
-                LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_STRUCK_PLAYER) + " " + ChatColor.RED +
-                        ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+            UUID playerUUID = onlinePlayer.getUniqueId();
+            ChatGuardHelper.runStrikeSystem(plugin, playerUUID, args[0], args[1]);
+            sender.sendMessage(
+                    LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_STRUCK_PLAYER) + " " + ChatColor.RED +
+                            ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+        } else {
+            plugin.getPixelChatCommand().getOfflinePlayerUUID(args[0]).thenAccept(uuid -> {
+                if (uuid != null) {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        ChatGuardHelper.runStrikeSystem(plugin, uuid, args[0], args[1]);
+                        sender.sendMessage(
+                                LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_STRUCK_PLAYER) + " " +
+                                        ChatColor.RED + ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+                    });
+                } else {
+                    sender.sendMessage(LangConstants.PLUGIN_PREFIX + ChatColor.RED + "Failed to fetch UUID for " + args[0]);
+                }
+            });
+        }
 
         return true;
     }

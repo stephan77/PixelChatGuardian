@@ -7,6 +7,7 @@ package de.pixelmindmc.pixelchat.commands;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.bukkit.Bukkit;
 import de.pixelmindmc.pixelchat.PixelChat;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import de.pixelmindmc.pixelchat.constants.PermissionConstants;
@@ -24,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * CommandExecutor for handling the "pixelchat" command, the main command for the plugin
@@ -166,39 +168,45 @@ public class PixelChatCommand implements CommandExecutor {
      * @param playerName The specific player name
      * @return a player uuid of an offline player
      */
-    public UUID getOfflinePlayerUUID(@NotNull String playerName) {
-        try {
-            String url = "https://api.mojang.com/users/profiles/minecraft/" + playerName;
-            HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
-            connection.setRequestMethod("GET");
+    public CompletableFuture<UUID> getOfflinePlayerUUID(@NotNull String playerName) {
+        CompletableFuture<UUID> future = new CompletableFuture<>();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                String url = "https://api.mojang.com/users/profiles/minecraft/" + playerName;
+                HttpURLConnection connection = (HttpURLConnection) new URI(url).toURL().openConnection();
+                connection.setRequestMethod("GET");
 
-            int responseCode = connection.getResponseCode();
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String inputLine;
+                    StringBuilder response = new StringBuilder();
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
+                    while ((inputLine = in.readLine()) != null) {
+                        response.append(inputLine);
+                    }
+                    in.close();
+
+                    // Parse the UUID from the JSON response
+                    String jsonResponse = response.toString();
+                    JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
+                    // Extract the content string from the first choice's message
+                    String contentString = jsonObject.get("id").getAsString();
+
+                    UUID uuid = UUID.fromString(
+                            contentString.replaceFirst("(.{8})(.{4})(.{4})(.{4})(.{12})", "$1-$2-$3-$4-$5"));
+
+                    // Debug logger message
+                    plugin.getLoggingHelper().debug("The uuid of the player " + playerName + " is: " + uuid);
+
+                    future.complete(uuid);
+                    return;
                 }
-                in.close();
-
-                // Parse the UUID from the JSON response
-                String jsonResponse = response.toString();
-                JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
-                // Extract the content string from the first choice's message
-                String contentString = jsonObject.get("id").getAsString();
-
-                UUID uuid = UUID.fromString(contentString.replaceFirst("(.{8})(.{4})(.{4})(.{4})(.{12})", "$1-$2-$3-$4-$5"));
-
-                // Debug logger message
-                plugin.getLoggingHelper().debug("The uuid of the player " + playerName + " is: " + uuid);
-
-                return uuid;
+            } catch (Exception e) {
+                plugin.getLoggingHelper().error(e.getMessage());
             }
-        } catch (Exception e) {
-            plugin.getLoggingHelper().error(e.getMessage());
-        }
-        return null; // Player not found or error occurred
+            future.complete(null); // Player not found or error occurred
+        });
+        return future;
     }
 }
