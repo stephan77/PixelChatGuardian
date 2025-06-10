@@ -45,7 +45,7 @@ public class PlayerJoinListener implements Listener {
         Player player = event.getPlayer();
 
         // Check if the player has the required permission
-        if (!player.isOp() || !player.hasPermission(PermissionConstants.PIXELCHAT_FULL_PERMISSIONS)) return;
+        if (!player.isOp() && !player.hasPermission(PermissionConstants.PIXELCHAT_FULL_PERMISSIONS)) return;
 
         // Retrieve API key from config
         String apiKey = configHelper.getString(ConfigConstants.API_KEY);

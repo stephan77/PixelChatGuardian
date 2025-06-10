@@ -32,7 +32,7 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
      */
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-
+        results.clear();
         switch (cmd.getLabel()) {
             case "pixelchat" -> handlePixelChatTabCompletion(sender, args);
             case "remove-strikes" -> handleRemoveStrikesTabCompletion(sender, args);
