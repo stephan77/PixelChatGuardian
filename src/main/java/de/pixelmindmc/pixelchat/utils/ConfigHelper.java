@@ -14,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -155,21 +158,18 @@ public class ConfigHelper {
         Map<String, String> resultMap = new HashMap<>();
         ConfigurationSection section = fileConfiguration.getConfigurationSection(path);
 
-        // If the section is not null, iterate over its keys and add them to the map
+        // If the section is missing in the loaded configuration, fall back to the
+        // default configuration bundled with the plugin JAR
         if (section == null) {
-            // Load the default config from the plugin's jar
-            FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), path));
-            section = defaultConfig.getConfigurationSection(path);
-
-            assert section != null;
-            for (String key : section.getKeys(false)) {
-                // Get the value associated with the key
-                String value = section.getString(key);
-                // Put the key-value pair in the resultMap
-                resultMap.put(key, value);
+            InputStream resource = plugin.getResource(this.path);
+            if (resource != null) {
+                FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
+                        new InputStreamReader(resource, StandardCharsets.UTF_8));
+                section = defaultConfig.getConfigurationSection(path);
             }
+        }
 
-            // Return the default message
+        if (section == null) {
             return resultMap;
         }
 
