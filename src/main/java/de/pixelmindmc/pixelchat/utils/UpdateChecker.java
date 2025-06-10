@@ -10,7 +10,6 @@ import com.google.gson.JsonParser;
 import de.pixelmindmc.pixelchat.PixelChat;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Math;
 
 import java.io.BufferedReader;
 import java.io.IOException;
