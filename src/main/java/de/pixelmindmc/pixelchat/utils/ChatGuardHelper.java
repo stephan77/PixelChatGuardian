@@ -9,6 +9,7 @@ import de.pixelmindmc.pixelchat.PixelChat;
 import de.pixelmindmc.pixelchat.constants.ConfigConstants;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import de.pixelmindmc.pixelchat.model.MessageClassification;
+import de.pixelmindmc.pixelchat.integration.DiscordWebhook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -55,6 +56,9 @@ public class ChatGuardHelper {
 
         plugin.getLoggingHelper()
                 .info("Message by " + player.getName() + (blockOrCensor ? " has been blocked: " : " has been censored: ") + userMessage);
+
+        // Send notification to Discord if configured
+        new DiscordWebhook(plugin).sendMessage("Player " + player.getName() + " sent: '" + userMessage.replace("\n", " ") + "' Reason: " + classification.reason());
 
         if (!classification.isOffensiveLanguage()) return;
 
