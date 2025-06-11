@@ -69,12 +69,7 @@ public final class PixelChat extends JavaPlugin {
         registerListeners(getServer().getPluginManager());
         registerCommands();
         registerTabCompleter(new TabCompleter());
-        initializeMetrics();
-        try {
-            checkForUpdates();
-        } catch (URISyntaxException | IOException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     /**

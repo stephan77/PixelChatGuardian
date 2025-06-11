@@ -25,6 +25,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 /**
  * A collection of methods to aid with the AI requests to the AI API
@@ -72,11 +75,14 @@ public class APIHelper {
                 return processResponse(jsonResponse);
             } else {
                 String errorResponse = decodeResponse(connection);
+                notifyAdmins("Fehler von der API: HTTP " + responseCode + ": " + errorResponse);
                 throw new MessageClassificationException("HTTP error code: " + responseCode + ", Error message: " + errorResponse);
             }
         } catch (IOException e) {
+            notifyAdmins("Fehler beim API-Zugriff LeKi-KI-Lexa: " + e.getMessage());
             throw new MessageClassificationException("Failed to classify message due to an IO issue.", e);
         } catch (Exception e) {
+            notifyAdmins("Fehler beim Verarbeiten der Anfrage LeKi-KI-Lexa: " + e.getMessage());
             throw new MessageClassificationException("Failed to classify message due to a URL syntax issue.", e);
         }
     }
@@ -175,5 +181,12 @@ public class APIHelper {
             }
         }
         return response.toString();
+    }
+    private void notifyAdmins(String message) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.isOp()) {
+                player.sendMessage(ChatColor.RED + "[LeKi-KI-Lex] Fehler: " + ChatColor.RESET + message);
+            }
+        }
     }
 }

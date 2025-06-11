@@ -62,3 +62,7 @@ permissions:
   pixelchat.bypass-chat-moderation:
     description: Bypasses the AI chat moderation
     default: false
+
+  pixelchat.admin:
+    description: See the Message
+    default: op
