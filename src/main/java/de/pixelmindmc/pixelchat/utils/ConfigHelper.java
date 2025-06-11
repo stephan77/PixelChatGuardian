@@ -116,6 +116,18 @@ public class ConfigHelper {
         // Aktuellen Wert aus der geladenen Konfiguration holen
         String message = fileConfiguration.getString(path);
 
+
+        // If the message is null or empty, load the default value from the plugin resources
+        if (message == null || message.trim().isEmpty()) {
+            InputStream resource = plugin.getResource(this.path);
+            if (resource != null) {
+                try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
+                    FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
+                    message = defaultConfig.getString(path);
+                } catch (IOException e) {
+                    plugin.getLoggingHelper().error("Failed to load default config: " + e);
+                }
+
         // Falls leer oder nicht vorhanden, Standardwert aus dem JAR laden
         if (message == null || message.trim().isEmpty()) {
             try (InputStream resource = plugin.getResource(this.path);
@@ -133,6 +145,7 @@ public class ConfigHelper {
                         plugin.getConfigHelperLanguage().getString(LangConstants.FAILED_TO_LOAD_DEFAULT)
                                 + " " + e.getMessage()
                 );
+
             }
 
             if (message == null || message.trim().isEmpty()) {
