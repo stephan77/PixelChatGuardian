@@ -25,7 +25,7 @@ players.
 - **Compatibility with other Chat Plugins**: Designed to work seamlessly alongside other chat plugins, our solution
   integrates effortlessly into your existing setup.
 - **Discord Integration**: Optionally forward blocked messages to a Discord channel via webhook for quick moderator insight.
-- **Advertising Filter**: Block messages advertising other servers while allowing your whitelisted domains.
+
 
 ## Installation
 
@@ -48,11 +48,14 @@ players.
   on [bStats](https://www.bstats.org/plugin/bukkit/PixelChat%20Guardian/23371).
 - If enabled, blocked chat messages are forwarded to the configured Discord channel. Set `discord-integration.enabled` and `discord-integration.webhook-url` in `config.yml`.
 
+
 ## Privacy & Data Usage
 
 PixelChat Guardian transmits player chat messages to the configured AI endpoint (Groq by default) for moderation purposes. The plugin does not store these messages beyond processing. Server administrators can disable AI moderation by setting the `modules.chatguard` option to `false` in `config.yml`.
 
 Anonymous usage statistics are submitted to [bStats](https://www.bstats.org) when `enable-metrics` is enabled. You may disable this telemetry by setting the option to `false`.
+=======
+
 
 ## Need Help or Have Suggestions?
 
