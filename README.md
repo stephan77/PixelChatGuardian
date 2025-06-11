@@ -24,6 +24,9 @@ players.
   and use it in their preferred language.
 - **Compatibility with other Chat Plugins**: Designed to work seamlessly alongside other chat plugins, our solution
   integrates effortlessly into your existing setup.
+- **Discord Integration**: Optionally forward blocked messages to a Discord channel via webhook for quick moderator insight.
+- **Advertising Filter**: Block messages advertising other servers while allowing your whitelisted domains.
+- **PlaceholderAPI & Scoreboard Support**: Use `%pixelchat_strikes%` and view strike counts via action bar or temporary scoreboard.
 
 ## Installation
 
@@ -44,6 +47,14 @@ players.
 - Always **create or update** your configuration files when updating the plugin to prevent any issues.
 - By default, the plugin collects **anonymous statistics**. You can view these
   on [bStats](https://www.bstats.org/plugin/bukkit/PixelChat%20Guardian/23371).
+- If enabled, blocked chat messages are forwarded to the configured Discord channel. Set `discord-integration.enabled` and `discord-integration.webhook-url` in `config.yml`.
+- Enable `strike-display.enabled` to show strike counts via scoreboard or action bar. The placeholder `%pixelchat_strikes%` is available when PlaceholderAPI is installed.
+
+## Privacy & Data Usage
+
+PixelChat Guardian transmits player chat messages to the configured AI endpoint (Groq by default) for moderation purposes. Messages are discarded once classified and are not stored by the plugin. If you do not want any chat data sent to external services, set `modules.chatguard` to `false` in `config.yml`.
+
+Anonymous server statistics are submitted to [bStats](https://www.bstats.org) when `enable-metrics` is `true`. Set this option to `false` if you prefer not to share telemetry.
 
 ## Need Help or Have Suggestions?
 

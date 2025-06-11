@@ -24,6 +24,7 @@ import de.pixelmindmc.pixelchat.commands.StrikeCommand;
 import de.pixelmindmc.pixelchat.constants.ConfigConstants;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import de.pixelmindmc.pixelchat.listener.AsyncPlayerChatListener;
+import de.pixelmindmc.pixelchat.integration.PlaceholderIntegration;
 import de.pixelmindmc.pixelchat.listener.PlayerJoinListener;
 import de.pixelmindmc.pixelchat.utils.*;
 import org.bstats.bukkit.Metrics;
@@ -70,6 +71,17 @@ public final class PixelChat extends JavaPlugin {
         registerCommands();
         registerTabCompleter(new TabCompleter());
 
+        initializeMetrics();
+        try {
+            checkForUpdates();
+        } catch (Exception e) {
+            getLoggingHelper().warning("Update check failed: " + e.getMessage());
+        }
+
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PlaceholderIntegration(this).register();
+        }
+
     }
 
     /**
@@ -90,6 +102,8 @@ public final class PixelChat extends JavaPlugin {
         configHelperLangSimplifiedChinese = new ConfigHelper(this, "locale/locale_zh-cn.yml");
         configHelperLangTraditionalChinese = new ConfigHelper(this, "locale/locale_zh-tw.yml");
 
+        ensureConfigEntries();
+
         // Check config versions
         String version = getDescription().getVersion();
         if (!version.equalsIgnoreCase(getConfigHelper().getString(ConfigConstants.CONFIG_VERSION)))
@@ -104,6 +118,45 @@ public final class PixelChat extends JavaPlugin {
 
         // Reset the strike count of every player if enabled
         if (getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_CLEAR_STRIKES_ON_SERVER_RESTART)) resetPlayerStrikesOnServerStart();
+    }
+
+    /**
+     * Ensures that additional settings exist in the config.
+     */
+    private void ensureConfigEntries() {
+        boolean changed = false;
+        if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_ENABLED)) {
+            configHelper.set(ConfigConstants.DISCORD_INTEGRATION_ENABLED, false);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_WEBHOOK_URL)) {
+            configHelper.set(ConfigConstants.DISCORD_INTEGRATION_WEBHOOK_URL, "WEBHOOK_URL");
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS)) {
+            configHelper.set(ConfigConstants.CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS, true);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS)) {
+            java.util.List<String> defaults = java.util.List.of("leki-world.de");
+            configHelper.set(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS, defaults);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_ENABLED)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_ENABLED, false);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR, true);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_TITLE)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_TITLE, "PixelChat Strikes");
+            changed = true;
+        }
+        if (changed) {
+            getLoggingHelper().info("Added missing config defaults to config.yml");
+        }
     }
 
     /**

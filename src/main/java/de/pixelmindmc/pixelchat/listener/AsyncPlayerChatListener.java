@@ -144,7 +144,7 @@ public class AsyncPlayerChatListener implements Listener {
         }
 
         // Check if classification matches any enabled blocking rules
-        if (ChatGuardHelper.messageMatchesEnabledRule(plugin, classification)) {
+        if (ChatGuardHelper.messageMatchesEnabledRule(plugin, message, classification)) {
             boolean blockOrCensor = plugin.getConfigHelper().getString(ConfigConstants.CHATGUARD_MESSAGE_HANDLING).equals("BLOCK");
             if (blockOrCensor) {
                 event.setCancelled(true);
