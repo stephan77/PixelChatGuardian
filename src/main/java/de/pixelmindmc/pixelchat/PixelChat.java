@@ -127,10 +127,8 @@ public final class PixelChat extends JavaPlugin {
     }
 
 
-    private void ensureConfigEntries() {
 
-     * Ensures that the Discord integration settings exist in the config.
-     */
+
     private void ensureDiscordConfigEntries() {
 
         boolean changed = false;
@@ -165,7 +163,7 @@ public final class PixelChat extends JavaPlugin {
      * Ensures that additional settings exist in the config.
      */
     private void ensureConfigEntries() {
-        boolean changed = false;
+        changed = false;
         if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_ENABLED)) {
             configHelper.set(ConfigConstants.DISCORD_INTEGRATION_ENABLED, false);
             changed = true;
