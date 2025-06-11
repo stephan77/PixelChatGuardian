@@ -37,6 +37,7 @@ dependencies {
 
     compileOnly 'org.apache.commons:commons-lang3:3.17.0'
     compileOnly 'de.hexaoxi:carbonchat-api:3.0.0-beta.28'
+    compileOnly 'me.clip:placeholderapi:2.11.5'
 
     // In Deinem Fall sollen diese Bibliotheken wirklich im Plugin enthalten sein
     implementation 'org.bstats:bstats-bukkit:3.1.0'

@@ -6,7 +6,7 @@ prefix: PixelChat
 authors: [ Gaming12846, ToothyDev ]
 description: Enhance your Minecraft experience with our AI-powered chat moderation plugin, featuring advanced chat and link filtering, plus emoji support.
 website: https://modrinth.com/plugin/pixelchatguardian/
-softdepend: [ CarbonChat ]
+softdepend: [ CarbonChat, PlaceholderAPI ]
 
 commands:
   pixelchat:
