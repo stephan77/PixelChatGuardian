@@ -32,6 +32,13 @@ plugin-support:
   # Enable support for CarbonChat integration. [Default: true]
   carbonchat: true # Tested with version 3.0.0-beta.28
 
+#################### Discord Integration ####################
+discord-integration:
+  # Enable or disable sending notifications to Discord. [Default: false]
+  enabled: false
+  # Webhook URL of the Discord channel.
+  webhook-url: "WEBHOOK_URL"
+
 ###################### Module Settings ######################
 
 # Toggle specific plugin modules on/off.

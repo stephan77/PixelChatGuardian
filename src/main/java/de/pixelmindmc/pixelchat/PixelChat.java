@@ -90,6 +90,8 @@ public final class PixelChat extends JavaPlugin {
         configHelperLangSimplifiedChinese = new ConfigHelper(this, "locale/locale_zh-cn.yml");
         configHelperLangTraditionalChinese = new ConfigHelper(this, "locale/locale_zh-tw.yml");
 
+        ensureDiscordConfigEntries();
+
         // Check config versions
         String version = getDescription().getVersion();
         if (!version.equalsIgnoreCase(getConfigHelper().getString(ConfigConstants.CONFIG_VERSION)))
@@ -104,6 +106,24 @@ public final class PixelChat extends JavaPlugin {
 
         // Reset the strike count of every player if enabled
         if (getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_CLEAR_STRIKES_ON_SERVER_RESTART)) resetPlayerStrikesOnServerStart();
+    }
+
+    /**
+     * Ensures that the Discord integration settings exist in the config.
+     */
+    private void ensureDiscordConfigEntries() {
+        boolean changed = false;
+        if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_ENABLED)) {
+            configHelper.set(ConfigConstants.DISCORD_INTEGRATION_ENABLED, false);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_WEBHOOK_URL)) {
+            configHelper.set(ConfigConstants.DISCORD_INTEGRATION_WEBHOOK_URL, "WEBHOOK_URL");
+            changed = true;
+        }
+        if (changed) {
+            getLoggingHelper().info("Added missing Discord integration defaults to config.yml");
+        }
     }
 
     /**
