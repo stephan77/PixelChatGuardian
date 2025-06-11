@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+
 /**
  * Utility class for managing configuration files
  */
@@ -150,7 +151,8 @@ public class ChatGuardHelper {
     private static void showStrikeInfo(@NotNull PixelChat plugin, @NotNull Player player, int strikes) {
         boolean actionBar = plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR);
         if (actionBar) {
-            player.sendActionBar(ChatColor.RED + "Strikes: " + strikes);
+           // player.sendActionBar(ChatColor.RED + "Strikes: " + strikes);
+            player.sendMessage(ChatColor.RED + "Strikes: " + strikes);
             return;
         }
         var manager = Bukkit.getScoreboardManager();
@@ -158,7 +160,7 @@ public class ChatGuardHelper {
         var board = manager.getNewScoreboard();
         String title = plugin.getConfigHelper().getString(ConfigConstants.STRIKE_DISPLAY_TITLE);
         var objective = board.registerNewObjective("pcg_strikes", "dummy", title);
-        objective.setDisplaySlot(org.bukkit.scoreboard.DisplaySlot.SIDEBAR);
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
         objective.getScore(ChatColor.YELLOW + "Strikes:").setScore(strikes);
         var old = player.getScoreboard();
         player.setScoreboard(board);
