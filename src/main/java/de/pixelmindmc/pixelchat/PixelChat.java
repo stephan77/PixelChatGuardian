@@ -70,6 +70,13 @@ public final class PixelChat extends JavaPlugin {
         registerCommands();
         registerTabCompleter(new TabCompleter());
 
+        initializeMetrics();
+        try {
+            checkForUpdates();
+        } catch (Exception e) {
+            getLoggingHelper().warning("Update check failed: " + e.getMessage());
+        }
+
     }
 
     /**
@@ -90,7 +97,11 @@ public final class PixelChat extends JavaPlugin {
         configHelperLangSimplifiedChinese = new ConfigHelper(this, "locale/locale_zh-cn.yml");
         configHelperLangTraditionalChinese = new ConfigHelper(this, "locale/locale_zh-tw.yml");
 
+
+        ensureConfigEntries();
+
         ensureDiscordConfigEntries();
+
 
         // Check config versions
         String version = getDescription().getVersion();
@@ -108,10 +119,13 @@ public final class PixelChat extends JavaPlugin {
         if (getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_CLEAR_STRIKES_ON_SERVER_RESTART)) resetPlayerStrikesOnServerStart();
     }
 
-    /**
+
+    private void ensureConfigEntries() {
+
      * Ensures that the Discord integration settings exist in the config.
      */
     private void ensureDiscordConfigEntries() {
+
         boolean changed = false;
         if (!configHelper.contains(ConfigConstants.DISCORD_INTEGRATION_ENABLED)) {
             configHelper.set(ConfigConstants.DISCORD_INTEGRATION_ENABLED, false);
@@ -121,8 +135,22 @@ public final class PixelChat extends JavaPlugin {
             configHelper.set(ConfigConstants.DISCORD_INTEGRATION_WEBHOOK_URL, "WEBHOOK_URL");
             changed = true;
         }
+
+        if (!configHelper.contains(ConfigConstants.CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS)) {
+            configHelper.set(ConfigConstants.CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS, true);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS)) {
+            java.util.List<String> defaults = java.util.List.of("leki-world.de");
+            configHelper.set(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS, defaults);
+            changed = true;
+        }
+        if (changed) {
+            getLoggingHelper().info("Added missing config defaults to config.yml");
+
         if (changed) {
             getLoggingHelper().info("Added missing Discord integration defaults to config.yml");
+
         }
     }
 

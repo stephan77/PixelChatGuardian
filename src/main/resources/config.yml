@@ -114,6 +114,11 @@ chatguard-rules:
   blockEmailAddresses: true
   # Restricts users from sharing website URLs to avoid spreading malicious links or inappropriate content.
   blockWebsites: false
+  # Blocks advertising for external servers except the domains listed below.
+  blockExternalServerAds: true
+  # Domains allowed in chat messages.
+  allowedServerDomains:
+    - "leki-world.de"
 
 # Use the built-in strike system for managing player behavior. [Default: true]
 use-built-in-strike-system: true
