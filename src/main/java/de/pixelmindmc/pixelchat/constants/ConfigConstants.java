@@ -29,10 +29,10 @@ public class ConfigConstants {
     public static final String CHATGUARD_ALLOWED_SERVER_DOMAINS = "chatguard-rules.allowedServerDomains";
 
 
+
     // Advertising filter settings
     public static final String CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS = "chatguard-rules.blockExternalServerAds";
     public static final String CHATGUARD_ALLOWED_SERVER_DOMAINS = "chatguard-rules.allowedServerDomains";
-
 
     // Module settings
     public static final String MODULE_CHATGUARD = "modules.chatguard";

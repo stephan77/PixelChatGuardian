@@ -64,7 +64,6 @@ public class ChatGuardHelper {
         // Send notification to Discord if configured
         new DiscordWebhook(plugin).sendMessage("Player " + player.getName() + " sent: '" + userMessage.replace("\n", " ") + "' Reason: " + classification.reason());
 
-
         String reasonLower = classification.reason().toLowerCase();
         if (reasonLower.contains("hate speech") || reasonLower.contains("slur") || reasonLower.contains("rassismus")) {
             executeCommand(plugin, plugin.getConfigHelper().getString(ConfigConstants.CHATGUARD_BAN_COMMAND), player.getName(), classification.reason());
