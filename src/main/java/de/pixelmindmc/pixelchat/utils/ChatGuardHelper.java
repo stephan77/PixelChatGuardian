@@ -13,6 +13,10 @@ import de.pixelmindmc.pixelchat.integration.DiscordWebhook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Objective;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -125,6 +129,12 @@ public class ChatGuardHelper {
         // Save the player's strike count
         configHelperPlayerStrikes.set(playerUUID + ".strikes", strikes);
 
+        // Optionally show strike count to the player
+        Player player = Bukkit.getPlayer(playerUUID);
+        if (player != null && plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_ENABLED)) {
+            showStrikeInfo(plugin, player, strikes);
+        }
+
         // Get the current date and time
         String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
@@ -135,6 +145,28 @@ public class ChatGuardHelper {
 
         // Log the new strike count for debugging
         plugin.getLoggingHelper().info(playerName + " got a Strike for " + reason + " and now has " + strikes + " strike(s)");
+    }
+
+    private static void showStrikeInfo(@NotNull PixelChat plugin, @NotNull Player player, int strikes) {
+        boolean actionBar = plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR);
+        if (actionBar) {
+            player.sendActionBar(ChatColor.RED + "Strikes: " + strikes);
+            return;
+        }
+        var manager = Bukkit.getScoreboardManager();
+        if (manager == null) return;
+        var board = manager.getNewScoreboard();
+        String title = plugin.getConfigHelper().getString(ConfigConstants.STRIKE_DISPLAY_TITLE);
+        var objective = board.registerNewObjective("pcg_strikes", "dummy", title);
+        objective.setDisplaySlot(org.bukkit.scoreboard.DisplaySlot.SIDEBAR);
+        objective.getScore(ChatColor.YELLOW + "Strikes:").setScore(strikes);
+        var old = player.getScoreboard();
+        player.setScoreboard(board);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> player.setScoreboard(old), 20L * 5);
+    }
+
+    public static void sendStrikeInfoOnJoin(@NotNull PixelChat plugin, @NotNull Player player, int strikes) {
+        showStrikeInfo(plugin, player, strikes);
     }
 
     /**

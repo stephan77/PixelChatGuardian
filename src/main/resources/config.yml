@@ -126,6 +126,16 @@ use-built-in-strike-system: true
 # Reset player strikes on server restart. [Default: true]
 clear-strikes-on-server-restart: true
 
+# Display strike information to players. When enabled, the strike count is shown
+# after a warning or when joining the server.
+strike-display:
+  # Enable or disable strike notifications. [Default: false]
+  enabled: false
+  # Use the action bar instead of a temporary scoreboard. [Default: true]
+  use-actionbar: true
+  # Scoreboard title when use-actionbar is false. [Default: PixelChat Strikes]
+  title: "PixelChat Strikes"
+
 # Custom command for issuing a strike to a player (requires an external plugin). [Default: /strike <player> <reason>]
 custom-strike-command: "strike <player> <reason>"
 

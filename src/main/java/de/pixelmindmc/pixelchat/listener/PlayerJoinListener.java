@@ -56,5 +56,10 @@ public class PlayerJoinListener implements Listener {
                     plugin.getConfigHelperLanguage().getString(LangConstants.FIRST_TIME_MESSAGE));
         } else if (configHelper.getFileExist() && (Objects.equals(apiKey, "API-KEY") || apiKey == null)) player.sendMessage(
                 LangConstants.PLUGIN_PREFIX + ChatColor.RED + plugin.getConfigHelperLanguage().getString(LangConstants.NO_API_KEY_SET));
+
+        if (plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_ENABLED)) {
+            int strikes = plugin.getConfigHelperPlayerStrikes().getInt(player.getUniqueId() + ".strikes");
+            de.pixelmindmc.pixelchat.utils.ChatGuardHelper.sendStrikeInfoOnJoin(plugin, player, strikes);
+        }
     }
 }

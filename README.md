@@ -26,6 +26,7 @@ players.
   integrates effortlessly into your existing setup.
 - **Discord Integration**: Optionally forward blocked messages to a Discord channel via webhook for quick moderator insight.
 - **Advertising Filter**: Block messages advertising other servers while allowing your whitelisted domains.
+- **PlaceholderAPI & Scoreboard Support**: Use `%pixelchat_strikes%` and view strike counts via action bar or temporary scoreboard.
 
 ## Installation
 
@@ -47,6 +48,7 @@ players.
 - By default, the plugin collects **anonymous statistics**. You can view these
   on [bStats](https://www.bstats.org/plugin/bukkit/PixelChat%20Guardian/23371).
 - If enabled, blocked chat messages are forwarded to the configured Discord channel. Set `discord-integration.enabled` and `discord-integration.webhook-url` in `config.yml`.
+- Enable `strike-display.enabled` to show strike counts via scoreboard or action bar. The placeholder `%pixelchat_strikes%` is available when PlaceholderAPI is installed.
 
 ## Privacy & Data Usage
 

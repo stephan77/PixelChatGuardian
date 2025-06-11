@@ -24,6 +24,7 @@ import de.pixelmindmc.pixelchat.commands.StrikeCommand;
 import de.pixelmindmc.pixelchat.constants.ConfigConstants;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import de.pixelmindmc.pixelchat.listener.AsyncPlayerChatListener;
+import de.pixelmindmc.pixelchat.integration.PlaceholderIntegration;
 import de.pixelmindmc.pixelchat.listener.PlayerJoinListener;
 import de.pixelmindmc.pixelchat.utils.*;
 import org.bstats.bukkit.Metrics;
@@ -75,6 +76,10 @@ public final class PixelChat extends JavaPlugin {
             checkForUpdates();
         } catch (Exception e) {
             getLoggingHelper().warning("Update check failed: " + e.getMessage());
+        }
+
+        if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PlaceholderIntegration(this).register();
         }
 
     }
@@ -135,6 +140,18 @@ public final class PixelChat extends JavaPlugin {
         if (!configHelper.contains(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS)) {
             java.util.List<String> defaults = java.util.List.of("leki-world.de");
             configHelper.set(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS, defaults);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_ENABLED)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_ENABLED, false);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR, true);
+            changed = true;
+        }
+        if (!configHelper.contains(ConfigConstants.STRIKE_DISPLAY_TITLE)) {
+            configHelper.set(ConfigConstants.STRIKE_DISPLAY_TITLE, "PixelChat Strikes");
             changed = true;
         }
         if (changed) {

@@ -19,6 +19,10 @@ public class ConfigConstants {
     // Discord integration settings
     public static final String DISCORD_INTEGRATION_ENABLED = "discord-integration.enabled";
     public static final String DISCORD_INTEGRATION_WEBHOOK_URL = "discord-integration.webhook-url";
+    // Strike display settings
+    public static final String STRIKE_DISPLAY_ENABLED = "strike-display.enabled";
+    public static final String STRIKE_DISPLAY_USE_ACTIONBAR = "strike-display.use-actionbar";
+    public static final String STRIKE_DISPLAY_TITLE = "strike-display.title";
     // Advertising filter settings
     public static final String CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS = "chatguard-rules.blockExternalServerAds";
     public static final String CHATGUARD_ALLOWED_SERVER_DOMAINS = "chatguard-rules.allowedServerDomains";
