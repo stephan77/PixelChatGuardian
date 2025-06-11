@@ -16,6 +16,24 @@ public class ConfigConstants {
     public static final String CHECK_FOR_UPDATES = "check-for-updates";
     public static final String LOG_LEVEL = "log-level";
     public static final String PLUGIN_SUPPORT_CARBONCHAT = "plugin-support.carbonchat";
+    // Discord integration settings
+    public static final String DISCORD_INTEGRATION_ENABLED = "discord-integration.enabled";
+    public static final String DISCORD_INTEGRATION_WEBHOOK_URL = "discord-integration.webhook-url";
+
+    // Strike display settings
+    public static final String STRIKE_DISPLAY_ENABLED = "strike-display.enabled";
+    public static final String STRIKE_DISPLAY_USE_ACTIONBAR = "strike-display.use-actionbar";
+    public static final String STRIKE_DISPLAY_TITLE = "strike-display.title";
+    // Advertising filter settings
+    public static final String CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS = "chatguard-rules.blockExternalServerAds";
+    public static final String CHATGUARD_ALLOWED_SERVER_DOMAINS = "chatguard-rules.allowedServerDomains";
+
+
+
+    // Advertising filter settings
+    public static final String CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS = "chatguard-rules.blockExternalServerAds";
+    public static final String CHATGUARD_ALLOWED_SERVER_DOMAINS = "chatguard-rules.allowedServerDomains";
+
     // Module settings
     public static final String MODULE_CHATGUARD = "modules.chatguard";
     public static final String MODULE_CHAT_CODES = "modules.chat-codes";

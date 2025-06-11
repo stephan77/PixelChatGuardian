@@ -18,6 +18,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.jetbrains.annotations.NotNull;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -139,10 +144,50 @@ public class AsyncPlayerChatListener implements Listener {
         }
 
         // Check if classification matches any enabled blocking rules
-        if (ChatGuardHelper.messageMatchesEnabledRule(plugin, classification)) {
+        if (ChatGuardHelper.messageMatchesEnabledRule(plugin, message, classification)) {
             boolean blockOrCensor = plugin.getConfigHelper().getString(ConfigConstants.CHATGUARD_MESSAGE_HANDLING).equals("BLOCK");
-            if (blockOrCensor) event.setCancelled(true);
-            else event.setMessage("*".repeat(message.length()));
+            if (blockOrCensor) {
+                event.setCancelled(true);
+            } else {
+                event.setMessage("*".repeat(message.length()));
+            }
+
+// Admins sehen Original – trotz Blockierung/Zensur
+
+            String reason = classification.reason();
+            String hoverText = "Grund: " + reason;
+            String clickCommand = "/ban " + player.getName() + " " + reason;
+
+            TextComponent adminViewPrefix = new TextComponent("[Admin-View] ");
+            adminViewPrefix.setColor(net.md_5.bungee.api.ChatColor.GRAY);
+
+            TextComponent playerNamePart = new TextComponent(player.getName() + ": ");
+            playerNamePart.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+
+            TextComponent messagePart = new TextComponent(message);
+            messagePart.setColor(net.md_5.bungee.api.ChatColor.WHITE);
+            messagePart.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverText)));
+            messagePart.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, clickCommand));
+
+            TextComponent fullMessage = new TextComponent();
+            fullMessage.addExtra(adminViewPrefix);
+            fullMessage.addExtra(playerNamePart);
+            fullMessage.addExtra(messagePart);
+
+            TextComponent prefix = new TextComponent("[LeKi-Lex-KI] ");
+            prefix.setColor(net.md_5.bungee.api.ChatColor.GRAY); // Oder andere Farbe, wie du willst
+
+            TextComponent fullAdminMessage = new TextComponent();
+            fullAdminMessage.addExtra(prefix);
+            fullAdminMessage.addExtra(adminViewPrefix);  // [Admin-View]
+            fullAdminMessage.addExtra(playerNamePart);   // Spielername
+            fullAdminMessage.addExtra(messagePart);      // eigentliche Nachricht
+
+            for (Player onlinePlayer : plugin.getServer().getOnlinePlayers()) {
+                if (onlinePlayer.hasPermission("pixelchat.admin")) {
+                    onlinePlayer.spigot().sendMessage(fullAdminMessage);
+                }
+            }
 
             ChatGuardHelper.notifyAndStrikePlayer(plugin, player, message, classification, blockOrCensor);
 

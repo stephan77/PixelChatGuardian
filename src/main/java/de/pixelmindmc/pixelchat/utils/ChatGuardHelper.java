@@ -9,9 +9,14 @@ import de.pixelmindmc.pixelchat.PixelChat;
 import de.pixelmindmc.pixelchat.constants.ConfigConstants;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import de.pixelmindmc.pixelchat.model.MessageClassification;
+import de.pixelmindmc.pixelchat.integration.DiscordWebhook;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Objective;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
@@ -55,6 +60,16 @@ public class ChatGuardHelper {
 
         plugin.getLoggingHelper()
                 .info("Message by " + player.getName() + (blockOrCensor ? " has been blocked: " : " has been censored: ") + userMessage);
+
+        // Send notification to Discord if configured
+        new DiscordWebhook(plugin).sendMessage("Player " + player.getName() + " sent: '" + userMessage.replace("\n", " ") + "' Reason: " + classification.reason());
+
+        String reasonLower = classification.reason().toLowerCase();
+        if (reasonLower.contains("hate speech") || reasonLower.contains("slur") || reasonLower.contains("rassismus")) {
+            executeCommand(plugin, plugin.getConfigHelper().getString(ConfigConstants.CHATGUARD_BAN_COMMAND), player.getName(), classification.reason());
+            new DiscordWebhook(plugin).sendMessage("\u26A0\uFE0F\u26A0\uFE0F\u26A0\uFE0F Player " + player.getName() + " banned for racism: " + classification.reason() + " \u26A0\uFE0F\u26A0\uFE0F\u26A0\uFE0F");
+            return;
+        }
 
         if (!classification.isOffensiveLanguage()) return;
 
@@ -114,6 +129,12 @@ public class ChatGuardHelper {
         // Save the player's strike count
         configHelperPlayerStrikes.set(playerUUID + ".strikes", strikes);
 
+        // Optionally show strike count to the player
+        Player player = Bukkit.getPlayer(playerUUID);
+        if (player != null && plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_ENABLED)) {
+            showStrikeInfo(plugin, player, strikes);
+        }
+
         // Get the current date and time
         String currentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
@@ -124,6 +145,28 @@ public class ChatGuardHelper {
 
         // Log the new strike count for debugging
         plugin.getLoggingHelper().info(playerName + " got a Strike for " + reason + " and now has " + strikes + " strike(s)");
+    }
+
+    private static void showStrikeInfo(@NotNull PixelChat plugin, @NotNull Player player, int strikes) {
+        boolean actionBar = plugin.getConfigHelper().getBoolean(ConfigConstants.STRIKE_DISPLAY_USE_ACTIONBAR);
+        if (actionBar) {
+            player.sendActionBar(ChatColor.RED + "Strikes: " + strikes);
+            return;
+        }
+        var manager = Bukkit.getScoreboardManager();
+        if (manager == null) return;
+        var board = manager.getNewScoreboard();
+        String title = plugin.getConfigHelper().getString(ConfigConstants.STRIKE_DISPLAY_TITLE);
+        var objective = board.registerNewObjective("pcg_strikes", "dummy", title);
+        objective.setDisplaySlot(org.bukkit.scoreboard.DisplaySlot.SIDEBAR);
+        objective.getScore(ChatColor.YELLOW + "Strikes:").setScore(strikes);
+        var old = player.getScoreboard();
+        player.setScoreboard(board);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> player.setScoreboard(old), 20L * 5);
+    }
+
+    public static void sendStrikeInfoOnJoin(@NotNull PixelChat plugin, @NotNull Player player, int strikes) {
+        showStrikeInfo(plugin, player, strikes);
     }
 
     /**
@@ -150,13 +193,20 @@ public class ChatGuardHelper {
      * @param classification The classification of the message
      * @return true if message violates an active block rule, false if no active block rules have been violated by the message
      */
-    public static boolean messageMatchesEnabledRule(@NotNull PixelChat plugin, @NotNull MessageClassification classification) {
+    public static boolean messageMatchesEnabledRule(@NotNull PixelChat plugin, @NotNull String message, @NotNull MessageClassification classification) {
         boolean blockOffensiveLanguage = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_OFFENSIVE_LANGUAGE);
         boolean blockUsernames = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_USERNAMES);
         boolean blockPasswords = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_PASSWORDS);
         boolean blockHomeAddresses = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_HOME_ADDRESSES);
         boolean blockEmailAddresses = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_EMAIL_ADDRESSES);
         boolean blockWebsites = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_RULES_BLOCK_WEBSITES);
+        boolean blockExternalAds = plugin.getConfigHelper().getBoolean(ConfigConstants.CHATGUARD_BLOCK_EXTERNAL_SERVER_ADS);
+
+        if (blockExternalAds && classification.isWebsite()) {
+            java.util.List<String> allowed = plugin.getConfigHelper().getStringList(ConfigConstants.CHATGUARD_ALLOWED_SERVER_DOMAINS);
+            boolean permitted = allowed.stream().anyMatch(domain -> message.toLowerCase().contains(domain.toLowerCase()));
+            if (!permitted) return true;
+        }
 
         if (blockOffensiveLanguage && classification.isOffensiveLanguage()) return true;
         if (blockUsernames && classification.isUsername()) return true;

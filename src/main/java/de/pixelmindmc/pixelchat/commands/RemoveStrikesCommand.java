@@ -63,20 +63,28 @@ public class RemoveStrikesCommand implements CommandExecutor {
         }
 
         Player onlinePlayer = Bukkit.getPlayer(args[0]);
-        UUID playerUUID;
         if (onlinePlayer != null) {
-            playerUUID = onlinePlayer.getUniqueId();
-        } else playerUUID = plugin.getPixelChatCommand().getOfflinePlayerUUID(args[0]);
-
-
-        if (playerUUID != null && configHelperPlayerStrikes.contains(playerUUID.toString()))
-            // Reset the player's strike count to 0
-            configHelperPlayerStrikes.set(playerUUID + ".strikes", 0);
-
-        // Send a message after successfully remove player strikes from a specific player
-        sender.sendMessage(
-                LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_REMOVED_PLAYER_STRIKES) + " " +
-                        ChatColor.RED + ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+            UUID playerUUID = onlinePlayer.getUniqueId();
+            if (configHelperPlayerStrikes.contains(playerUUID.toString()))
+                configHelperPlayerStrikes.set(playerUUID + ".strikes", 0);
+            sender.sendMessage(
+                    LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_REMOVED_PLAYER_STRIKES) + " " +
+                            ChatColor.RED + ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+        } else {
+            plugin.getPixelChatCommand().getOfflinePlayerUUID(args[0]).thenAccept(uuid -> {
+                if (uuid != null) {
+                    Bukkit.getScheduler().runTask(plugin, () -> {
+                        if (configHelperPlayerStrikes.contains(uuid.toString()))
+                            configHelperPlayerStrikes.set(uuid + ".strikes", 0);
+                        sender.sendMessage(
+                                LangConstants.PLUGIN_PREFIX + configHelperLanguage.getString(LangConstants.PIXELCHAT_REMOVED_PLAYER_STRIKES) + " " +
+                                        ChatColor.RED + ChatColor.BOLD + args[0] + ChatColor.RESET + ".");
+                    });
+                } else {
+                    sender.sendMessage(LangConstants.PLUGIN_PREFIX + ChatColor.RED + "Failed to fetch UUID for " + args[0]);
+                }
+            });
+        }
         return true;
     }
 }
