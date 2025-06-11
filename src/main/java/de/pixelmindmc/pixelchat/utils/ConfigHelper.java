@@ -4,7 +4,6 @@
  */
 
 package de.pixelmindmc.pixelchat.utils;
-
 import de.pixelmindmc.pixelchat.PixelChat;
 import de.pixelmindmc.pixelchat.constants.LangConstants;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,6 +18,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,9 +61,7 @@ public class ConfigHelper {
      */
     public void loadConfig() {
         file = new File(plugin.getDataFolder(), path);
-
         if (!file.exists()) saveDefaultConfig();
-
         fileConfiguration = YamlConfiguration.loadConfiguration(file);
     }
 
@@ -75,32 +73,32 @@ public class ConfigHelper {
             fileConfiguration.save(file);
             loadConfig();
         } catch (IOException e) {
-            plugin.getLoggingHelper().error(plugin.getConfigHelperLanguage().getString(LangConstants.FAILED_TO_SAVE_CONFIG) + " " + e);
+            plugin.getLoggingHelper().error(
+                    plugin.getConfigHelperLanguage().getString(LangConstants.FAILED_TO_SAVE_CONFIG)
+                            + " " + e.getMessage()
+            );
         }
     }
 
     /**
-     * Retrieve the boolean fileExist
+     * Retrieve whether the file existed before
      *
-     * @return The boolean
+     * @return true if file existed, false if it was created now
      */
     public boolean getFileExist() {
         return fileExist;
     }
 
     /**
-     * Method to set a specified path with the given value
+     * Set a specified path with the given value in the config
      */
-    public void set(String path, Object value) {
+    public void set(@NotNull String path, Object value) {
         fileConfiguration.set(path, value);
         saveConfig();
     }
 
     /**
      * Checks if the specified path exists in the file configuration
-     *
-     * @param path The path of the value
-     * @return The value
      */
     public boolean contains(@NotNull String path) {
         return fileConfiguration.contains(path);
@@ -113,47 +111,25 @@ public class ConfigHelper {
      * @return The value, or a "Message not found" message
      */
     public String getString(@NotNull String path) {
-        // Aktuellen Wert aus der geladenen Konfiguration holen
         String message = fileConfiguration.getString(path);
-
-
-        // If the message is null or empty, load the default value from the plugin resources
         if (message == null || message.trim().isEmpty()) {
-            InputStream resource = plugin.getResource(this.path);
-            if (resource != null) {
-                try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
-                    FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
-                    message = defaultConfig.getString(path);
-                } catch (IOException e) {
-                    plugin.getLoggingHelper().error("Failed to load default config: " + e);
-                }
-
-        // Falls leer oder nicht vorhanden, Standardwert aus dem JAR laden
-        if (message == null || message.trim().isEmpty()) {
-            try (InputStream resource = plugin.getResource(this.path);
-                 InputStreamReader reader = resource != null
-                         ? new InputStreamReader(resource, StandardCharsets.UTF_8)
-                         : null) {
-
-                if (reader != null) {
-                    FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
-                    message = defaultConfig.getString(path);
+            try (InputStream resource = plugin.getResource(this.path)) {
+                if (resource != null) {
+                    try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
+                        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
+                        message = defaultConfig.getString(path);
+                    }
                 }
             } catch (IOException e) {
-                // Protokollieren des Fehlers, statt ihn weiterzuwerfen
                 plugin.getLoggingHelper().error(
                         plugin.getConfigHelperLanguage().getString(LangConstants.FAILED_TO_LOAD_DEFAULT)
                                 + " " + e.getMessage()
                 );
-
-            }
-
-            if (message == null || message.trim().isEmpty()) {
-                return "Message not found: " + path;
             }
         }
-
-        return message;
+        return (message == null || message.trim().isEmpty())
+                ? "Message not found: " + path
+                : message;
     }
 
     /**
@@ -177,6 +153,16 @@ public class ConfigHelper {
     }
 
     /**
+     * Retrieve a list of strings from the config
+     *
+     * @param path The path of the list
+     * @return A List<String>, never null
+     */
+    public List<String> getStringList(@NotNull String path) {
+        return fileConfiguration.getStringList(path);
+    }
+
+    /**
      * Retrieve a string map from the config
      *
      * @param path The path of the value
@@ -185,35 +171,28 @@ public class ConfigHelper {
     public Map<String, String> getStringMap(@NotNull String path) {
         Map<String, String> resultMap = new HashMap<>();
         ConfigurationSection section = fileConfiguration.getConfigurationSection(path);
-
-        // If the section is missing in the loaded configuration, fall back to the
-        // default configuration bundled with the plugin JAR
         if (section == null) {
-            InputStream resource = plugin.getResource(this.path);
-            if (resource != null) {
-                FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
-                        new InputStreamReader(resource, StandardCharsets.UTF_8));
-                section = defaultConfig.getConfigurationSection(path);
+            try (InputStream resource = plugin.getResource(this.path)) {
+                if (resource != null) {
+                    try (InputStreamReader reader = new InputStreamReader(resource, StandardCharsets.UTF_8)) {
+                        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(reader);
+                        section = defaultConfig.getConfigurationSection(path);
+                    }
+                }
+            } catch (IOException ignored) {}
+        }
+        if (section != null) {
+            for (String key : section.getKeys(false)) {
+                resultMap.put(key, section.getString(key));
             }
-        }
-
-        if (section == null) {
-            return resultMap;
-        }
-
-        for (String key : section.getKeys(false)) {
-            // Get the value associated with the key
-            String value = section.getString(key);
-            // Put the key-value pair in the resultMap
-            resultMap.put(key, value);
         }
         return resultMap;
     }
 
     /**
-     * Retrieve all keys in the config at a given path or at the root if no path is specified
+     * Retrieve all keys in the config at a given path or at the root
      *
-     * @param path The path of the section, or empty string ("") for root
+     * @param path The path of the section
      * @return A set of all keys found in that section or root
      */
     public Set<String> getKeys(@NotNull String path) {
